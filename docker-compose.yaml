@@ -1,0 +1,24 @@
+services:
+  node-api:
+    container_name: auth-app
+    ports:
+      - "3000:3000"
+    image: auth-server
+    build: ./
+    networks:
+      - auth-network
+    environment:
+      - NODE_ENV=test
+      - MONGODB_URI=mongodb://auth-mongo-db:27017/Authentication
+      - JWT_SECRET=superSecretPassword
+  mongo-db:
+    image: mongo
+    container_name: auth-mongo-db
+    ports:
+      - "27017:27017"
+    networks:
+      - auth-network
+networks:
+  auth-network:
+    name: auth-network
+    driver: bridge
