@@ -4,6 +4,19 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - email
+ *         - name
+ *         - hash
+ *         - salt
+ */
+
 const usersSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: [true, "Email is required!"] },
     name: { type: String, required: [true, "Name is required!"] },
