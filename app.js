@@ -102,7 +102,7 @@ app.use("/api", apiRouter);
 
 // Say hello world when user visits the root URL
 app.get('/', (req, res) => {
-    res.send('Hello, this is the root URL of the microservice Orders');
+    res.send('Hello, this is the root URL of the microservice Authentication');
 });
 
 /**
