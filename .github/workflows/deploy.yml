@@ -1,0 +1,28 @@
+name: Build and push to ACR
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: build and push to ACR 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Azure Docker login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACS_LOGIN_SERVER }}
+          username: ${{ secrets.ACS_USERNAME }}
+          password: ${{ secrets.ACS_PASSWORD }}
+      
+      - name: Push to ACR
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ secrets.IMAGE_TAG }}
+          file: Dockerfile
