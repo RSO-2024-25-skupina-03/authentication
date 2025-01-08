@@ -9,6 +9,10 @@ jobs:
     name: build and push to ACR 
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Clone repo
         uses: actions/checkout@v4.2.2
