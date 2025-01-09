@@ -7,7 +7,7 @@ import passport from "passport";
  *  post:
  *    summary: Register new user
  *    description: Register new user
- *    tags: [Authentication]
+ *    tags: [Authentication, Users]
  *    requestBody:
  *      required: true
  *      content:
@@ -76,7 +76,7 @@ const register = async (req, res) => {
  *  post:
  *    summary: Login user
  *    description: Login user
- *    tags: [Authentication]
+ *    tags: [Authentication, Users]
  *    requestBody:
  *      required: true
  *      content:
