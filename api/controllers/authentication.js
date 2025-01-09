@@ -21,6 +21,12 @@ import passport from "passport";
  *                type: string
  *              password:
  *                type: string
+ *              type:
+ *                type: string
+ *                enum: [user, admin]
+ *                default: user
+ *              adminKey:
+ *                type: string
  *    responses:
  *      200:
  *        description: OK
@@ -46,17 +52,15 @@ import passport from "passport";
  */
 
 const register = async (req, res) => {
-    if (!req.body.name || !req.body.email || !req.body.password)
+    if (!req.body.name || !req.body.email || !req.body.password || !req.body.type)
         return res.status(400).json({ message: "All fields required." });
+    if (req.body.type === "admin" && req.body.adminKey !== process.env.ADMIN_KEY)
+        return res.status(400).json({ message: "Invalid admin key." });
     const user = new User();
     user.name = req.body.name;
     user.email = req.body.email;
+    user.type = req.body.type;
     
-    // Check if setPassword method exists
-    if (typeof user.setPassword !== 'function') {
-        return res.status(500).json({ message: "setPassword method is not defined on User model" });
-    }
-
     user.setPassword(req.body.password);
     try {
         await user.save();
