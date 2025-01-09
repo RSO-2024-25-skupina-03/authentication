@@ -16,6 +16,12 @@ import "./api/config/passport.js";
 const port = process.env.PORT || 3000;
 const app = express();
 
+// Enable CORS for all routes
+import cors from 'cors';
+if(process.env.NODE_ENV === 'test') {
+app.use(cors());
+}
+
 /**
  * Swagger and OpenAPI
  */
