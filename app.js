@@ -2,12 +2,20 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import passport from "passport";
 
+import metricsMiddleware from './prometheus/init.js';
+
 /**
  * Database connection
  */
 import "./api/models/db.js";
 import "./api/config/passport.js";
 
+
+/**
+ * Loki logger
+ */
+const logger = getLogger()
+logger.info("Starting app...")
 
 /**
  * Create server
@@ -18,8 +26,8 @@ const app = express();
 
 // Enable CORS for all routes
 import cors from 'cors';
-if(process.env.NODE_ENV === 'test') {
-app.use(cors());
+if (process.env.NODE_ENV === 'test') {
+    app.use(cors());
 }
 
 /**
@@ -88,7 +96,7 @@ const getSwaggerOptions = (req) => {
 };
 
 // Use Swagger UI
-app.use('/api/docs', swaggerUi.serve, (req, res, next) => {
+app.use('/api/authentication/docs', swaggerUi.serve, (req, res, next) => {
     const swaggerOptions = getSwaggerOptions(req);
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
     swaggerUi.setup(swaggerDocs, {
@@ -97,7 +105,7 @@ app.use('/api/docs', swaggerUi.serve, (req, res, next) => {
 });
 
 // Serve Swagger JSON
-app.get('/api/swagger.json', (req, res) => {
+app.get('/api/authentication/swagger.json', (req, res) => {
     const swaggerOptions = getSwaggerOptions(req);
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
     res.status(200).json(swaggerDocs);
@@ -109,6 +117,9 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
 });
+
+// prometheus metrics
+app.use(metricsMiddleware);
 
 /**
  * Body parser (application/x-www-form-urlencoded)
@@ -126,13 +137,18 @@ app.use("/api", apiRouter);
 
 // Say hello world when user visits the root URL
 app.get('/', (req, res) => {
-    res.send('Hello, this is the root URL of the microservice Authentication. The api is available at /api and the documentation is available at /api/docs');
+    res.send('Hello, this is the root URL of the microservice Authentication. The api is available at /api and the documentation is available at /api/authentication/docs');
 });
 
 /**
  * Passport
  */
 app.use(passport.initialize());
+
+// loki logging middleware
+app.use(responseTime(logResponseTime));
+// loki error logging middleware
+app.use(logError);
 
 // Error handling middleware
 // should be added after all other routes and middleware
@@ -141,7 +157,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal Server Error' });
 });
 
-
 // listen for requests on port 
 const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
@@ -149,6 +164,10 @@ const server = app.listen(port, () => {
 
 // Graceful shutdown
 import { gracefulShutdown } from "./api/models/db.js";
+import { getLogger } from './loki/init.js';
+import { logResponseTime } from './loki/responseTimeLogger.js';
+import { logError } from './loki/errorLogger.js';
+import responseTime from 'response-time';
 
 const shutdown = (msg) => {
     console.log(`${msg} signal received: closing HTTP server Orders`);
