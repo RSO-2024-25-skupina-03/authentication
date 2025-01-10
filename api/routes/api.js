@@ -10,5 +10,6 @@ router.get("/health", healthcheck);
  */
 router.post("/register", ctrlAuthentication.register);
 router.post("/login", ctrlAuthentication.login);
+router.post("/jwt", ctrlAuthentication.verifyToken);
 
 export default router;

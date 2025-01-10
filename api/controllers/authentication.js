@@ -1,5 +1,8 @@
 import User from "../models/users.js";
 import passport from "passport";
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * @openapi
@@ -60,7 +63,7 @@ const register = async (req, res) => {
     user.name = req.body.name;
     user.email = req.body.email;
     user.type = req.body.type;
-    
+
     user.setPassword(req.body.password);
     try {
         await user.save();
@@ -129,7 +132,73 @@ const login = (req, res) => {
         })(req, res);
 };
 
+
+/**
+ * @openapi
+ * /jwt:
+ *  post:
+ *    summary: Verify JWT token
+ *    description: Verify JWT token
+ *    tags: [Authentication]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/x-www-form-urlencoded:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              token:
+ *                type: string
+ *    responses:
+ *      200:
+ *        description: OK
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *      400:
+ *        description: Bad request
+ *        content:
+ *          application/json:
+ *            schema:
+ *             $ref: '#/components/schemas/ErrorMessage'
+ *      401:
+ *        description: Unauthorized
+ *        content:
+ *          application/json:
+ *            schema:
+ *             $ref: '#/components/schemas/ErrorMessage'
+ *      500:
+ *        description: Internal Server Error
+ *        content:
+ *          application/json:
+ *            schema:
+ *             $ref: '#/components/schemas/ErrorMessage'
+ */
+
+let jwtKey = process.env.JWT_SECRET;
+try {
+    // Load JWT key from Kubernetes Secret
+    jwtKey = fs.readFileSync(path.join('/var/run/secrets/kubernetes.io/serviceaccount', 'JWT_KEY'), 'utf8');
+} catch (err) {
+    console.error("JWT key not found in Kubernetes Secret. Using key from environment variable.");
+}
+// Function to verify JWT token
+const verifyToken = (req, res) => {
+    const token = req.body.token || req.query.token || req.headers['authorization'];
+    if (!token) return res.status(400).json({ message: "Token is required." });
+
+    jwt.verify(token, jwtKey, { algorithms: ["HS256"] }, (err, decoded) => {
+        if (err) return res.status(401).json({ message: "Invalid token." });
+        res.status(200).json({ message: "Token is valid."});
+    });
+};
+
 export default {
     register,
     login,
+    verifyToken
 };
