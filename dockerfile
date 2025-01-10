@@ -1,6 +1,9 @@
 FROM node:20-alpine
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+
+RUN apk add curl
+
 # Default application directory for all subsequent commands (COPY, RUN, CMD etc.).
 WORKDIR /usr/src/app
 # Copy package.json and install dependencies.
