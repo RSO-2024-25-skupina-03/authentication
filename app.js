@@ -132,7 +132,7 @@ app.use(bodyParser.json());
  * API routing
  */
 import apiRouter from "./api/routes/api.js";
-app.use("/api", apiRouter);
+app.use("/", apiRouter);
 
 
 // Say hello world when user visits the root URL
