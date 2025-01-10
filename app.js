@@ -38,7 +38,7 @@ import swaggerUi from "swagger-ui-express";
 const getSwaggerOptions = (req) => {
     const protocol = req.protocol;
     const host = req.get('host');
-    const baseUrl = `${protocol}://${host}/api`;
+    const baseUrl = `${protocol}://${host}`;
 
     return {
         definition: {
@@ -68,11 +68,11 @@ const getSwaggerOptions = (req) => {
                     description: "Current server",
                 },
                 {
-                    url: "http://localhost:8004/api",
+                    url: "http://localhost:8004",
                     description: "Server when running on docker-compose with other microservices",
                 },
                 {
-                    url: "http://localhost:3000/api",
+                    url: "http://localhost:3000",
                     description: "Development server for testing",
                 },
             ],
@@ -96,7 +96,7 @@ const getSwaggerOptions = (req) => {
 };
 
 // Use Swagger UI
-app.use('/api/authentication/docs', swaggerUi.serve, (req, res, next) => {
+app.use('/docs', swaggerUi.serve, (req, res, next) => {
     const swaggerOptions = getSwaggerOptions(req);
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
     swaggerUi.setup(swaggerDocs, {
@@ -105,7 +105,7 @@ app.use('/api/authentication/docs', swaggerUi.serve, (req, res, next) => {
 });
 
 // Serve Swagger JSON
-app.get('/api/authentication/swagger.json', (req, res) => {
+app.get('/swagger.json', (req, res) => {
     const swaggerOptions = getSwaggerOptions(req);
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
     res.status(200).json(swaggerDocs);
@@ -137,7 +137,7 @@ app.use("/api", apiRouter);
 
 // Say hello world when user visits the root URL
 app.get('/', (req, res) => {
-    res.send('Hello, this is the root URL of the microservice Authentication. The api is available at /api and the documentation is available at /api/authentication/docs');
+    res.send('Hello, this is the root URL of the microservice Authentication. The api is available at / and the documentation is available at /docs');
 });
 
 /**
