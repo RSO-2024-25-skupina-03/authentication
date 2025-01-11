@@ -4,6 +4,9 @@ import passport from "passport";
 
 import metricsMiddleware from './prometheus/init.js';
 
+import swaggerUi from "swagger-ui-express";
+import swaggerJsDoc from "swagger-jsdoc";
+
 /**
  * Database connection
  */
@@ -23,93 +26,13 @@ logger.info("Starting app...")
  */
 const port = process.env.PORT || 3000;
 const app = express();
+app.set('base', '/api/authentication');
 
 // Enable CORS for all routes
 import cors from 'cors';
 if (process.env.NODE_ENV === 'test') {
     app.use(cors());
 }
-
-/**
- * Swagger and OpenAPI
- */
-import swaggerJsDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
-const getSwaggerOptions = (req) => {
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const baseUrl = `${protocol}://${host}`;
-
-    return {
-        definition: {
-            openapi: "3.1.0",
-            info: {
-                title: "Macje storitve - Authentication",
-                version: "0.1.0",
-                description: "API for the microservice Orders",
-            },
-            tags: [
-                {
-                    name: "Health",
-                    description: "Health check",
-                },
-                {
-                    name: "Users",
-                    description: "User management",
-                },
-                {
-                    name: "Authentication",
-                    description: "Authentication",
-                },
-            ],
-            servers: [
-                {
-                    url: baseUrl,
-                    description: "Current server",
-                },
-                {
-                    url: "http://localhost:8004",
-                    description: "Server when running on docker-compose with other microservices",
-                },
-                {
-                    url: "http://localhost:3000",
-                    description: "Development server for testing",
-                },
-            ],
-            components: {
-                schemas: {
-                    ErrorMessage: {
-                        type: "object",
-                        properties: {
-                            message: {
-                                type: "string",
-                                description: "Message describing the error.",
-                            },
-                        },
-                        required: ["message"],
-                    },
-                },
-            },
-        },
-        apis: ["./api/models/*.js", "./api/controllers/*.js"],
-    };
-};
-
-// Use Swagger UI
-app.use('/docs', swaggerUi.serve, (req, res, next) => {
-    const swaggerOptions = getSwaggerOptions(req);
-    const swaggerDocs = swaggerJsDoc(swaggerOptions);
-    swaggerUi.setup(swaggerDocs, {
-        customCss: '.swagger-ui .topbar { display: none }',
-    })(req, res, next);
-});
-
-// Serve Swagger JSON
-app.get('/swagger.json', (req, res) => {
-    const swaggerOptions = getSwaggerOptions(req);
-    const swaggerDocs = swaggerJsDoc(swaggerOptions);
-    res.status(200).json(swaggerDocs);
-});
 
 // middleware
 // log the request method and URL for every request
@@ -132,8 +55,28 @@ app.use(bodyParser.json());
  * API routing
  */
 import apiRouter from "./api/routes/api.js";
+import swaggerRouter, { forwardedPrefixSwagger, getSwaggerOptions } from "./api/routes/swaggerRouter.js";
 app.use("/", apiRouter);
+app.use("/", swaggerRouter);
 
+// Middleware to redirect /docs to /docs/
+app.use('/docs', (req, res, next) => {
+    if (req.originalUrl === '/docs') {
+        res.redirect('/docs/');
+    } else {
+        next();
+    }
+});
+
+
+// Use Swagger UI
+app.use('/docs', forwardedPrefixSwagger, swaggerUi.serve, (req, res, next) => {
+    const swaggerOptions = getSwaggerOptions(req);
+    const swaggerDocs = swaggerJsDoc(swaggerOptions);
+    swaggerUi.setup(swaggerDocs, {
+        customCss: '.swagger-ui .topbar { display: none }',
+    })(req, res, next);
+});
 
 // Say hello world when user visits the root URL
 app.get('/', (req, res) => {
