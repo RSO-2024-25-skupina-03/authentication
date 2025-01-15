@@ -75,7 +75,7 @@ usersSchema.methods.generateJwt = function () {
 
 const getUserModel = async (dbName) => {
     const connection = await connectToDatabase(dbName);
-    return connection.model('Order', orderSchema, 'Orders');
+    return connection.model('Order', usersSchema, 'Orders');
 };
 
 export default getUserModel;

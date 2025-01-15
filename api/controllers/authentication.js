@@ -16,7 +16,6 @@ import getUserModel from "../models/users.js";
  *        name: tenant
  *        required: true
  *        description: The tenant name
- *        required: true
  *        example: tenant1
  *        schema:
  *          type: string
@@ -50,10 +49,10 @@ import getUserModel from "../models/users.js";
  *                token:
  *                  type: string
  *      400:
- *       description: Bad request
- *       content:
- *         application/json:
- *           schema:
+ *        description: Bad request
+ *        content:
+ *          application/json:
+ *            schema:
  *             $ref: '#/components/schemas/ErrorMessage'
  *      500:
  *        description: Internal Server Error

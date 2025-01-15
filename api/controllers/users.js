@@ -1,7 +1,9 @@
+import getUserModel from "../models/users.js";
+
 /**
  * @openapi
- * /username/{user_id}:
- * get:
+ * /{tenant}/username/{user_id}:
+ *  get:
  *   summary: Get username by ID
  *   description: Get username by ID
  *   tags: [Users]
@@ -41,8 +43,6 @@
  *           schema:
  *             $ref: '#/components/schemas/ErrorMessage'
  */
-
-import User from "../models/users";
 
 const getUserById = async (req, res) => {
     if (!req.params.user_id)

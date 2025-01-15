@@ -9,7 +9,7 @@ services:
       - auth-network
     environment:
       - NODE_ENV=test
-      - MONGODB_URI=mongodb://auth-mongo-db:27017/Authentication
+      - MONGODB_URI=mongodb://auth-mongo-db:27017
       - JWT_SECRET=superSecretPassword
       - ADMIN_KEY=superAdminKey
   mongo-db:
