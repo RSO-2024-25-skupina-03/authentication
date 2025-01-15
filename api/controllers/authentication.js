@@ -1,16 +1,25 @@
-import User from "../models/users.js";
 import passport from "passport";
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+import getUserModel from "../models/users.js";
 
 /**
  * @openapi
- * /register:
+ * /{tenant}/register:
  *  post:
  *    summary: Register new user
  *    description: Register new user
  *    tags: [Authentication, Users]
+ *    parameters:
+ *      - in: path
+ *        name: tenant
+ *        required: true
+ *        description: The tenant name
+ *        required: true
+ *        example: tenant1
+ *        schema:
+ *          type: string
  *    requestBody:
  *      required: true
  *      content:
@@ -59,6 +68,7 @@ const register = async (req, res) => {
         return res.status(400).json({ message: "All fields required." });
     if (req.body.type === "admin" && req.body.adminKey !== process.env.ADMIN_KEY)
         return res.status(400).json({ message: "Invalid admin key." });
+    const User = await getUserModel(req.tenant);
     const user = new User();
     user.name = req.body.name;
     user.email = req.body.email;
@@ -75,11 +85,19 @@ const register = async (req, res) => {
 
 /**
  * @openapi
- * /login:
+ * /{tenant}/login:
  *  post:
  *    summary: Login user
  *    description: Login user
  *    tags: [Authentication, Users]
+ *    parameters:
+ *      - in: path
+ *        name: tenant
+ *        required: true
+ *        description: The tenant name
+ *        example: tenant1
+ *        schema:
+ *          type: string
  *    requestBody:
  *      required: true
  *      content:
@@ -122,10 +140,13 @@ const register = async (req, res) => {
  */
 
 const login = (req, res) => {
+    if (!req.params.tenant){
+        return res.status(400).json({ message: "Tenant required" });
+    }
     if (!req.body.email || !req.body.password)
         return res.status(400).json({ message: "All fields required." });
     else
-        passport.authenticate("local", (err, user, info) => {
+        passport.authenticate("local", { session: false }, (err, user, info) => {
             if (err) return res.status(500).json({ message: err.message });
             if (user) return res.status(200).json({ token: user.generateJwt() });
             else return res.status(401).json({ message: info.message });

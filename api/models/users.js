@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { type } from "os";
 import e from "express";
+import { connectToDatabase } from "./db.js";
 dotenv.config();
 
 /**
@@ -72,4 +73,9 @@ usersSchema.methods.generateJwt = function () {
     );
 };
 
-export default mongoose.model("User", usersSchema, "Users");
+const getUserModel = async (dbName) => {
+    const connection = await connectToDatabase(dbName);
+    return connection.model('Order', orderSchema, 'Orders');
+};
+
+export default getUserModel;
