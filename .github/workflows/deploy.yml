@@ -1,4 +1,4 @@
-name: Build and push to ACR
+name: Build, test, and push to ACR
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: build and push to ACR 
+    name: build, test, and push to ACR 
     runs-on: ubuntu-latest
 
     defaults:
@@ -16,6 +16,38 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@v4.2.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Install Compose
+        uses: ndeloof/install-compose-action@v0.0.1
+        with:
+          version: v2.1.0 # defaults to 'latest'
+          legacy: true    # will also install in PATH as `docker-compose`
+      - run: docker-compose --version
+
+      - name: Build Docker images
+        run: docker-compose build
+
+      - name: Start Docker containers
+        run: docker-compose up --detach
+
+      - name: Wait for services to be ready
+        run: |
+          while ! curl -s http://localhost:3000/health; do
+            echo "Waiting for the app to be ready..."
+            sleep 5
+          done
+
+      - name: Run tests
+        run: npm test
+
+      - name: Stop Docker containers
+        run: docker-compose down
 
       - name: Azure Docker login
         uses: docker/login-action@v3

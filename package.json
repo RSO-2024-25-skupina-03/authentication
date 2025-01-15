@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha 'test/**/*.js'"
   },
   "keywords": [
     "jwt"
@@ -27,5 +27,10 @@
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0",
     "winston-loki": "^6.1.3"
+  },
+  "devDependencies": {
+    "chai": "^5.1.2",
+    "mocha": "^11.0.1",
+    "supertest": "^7.0.0"
   }
 }
