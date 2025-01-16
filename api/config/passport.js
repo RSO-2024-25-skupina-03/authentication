@@ -11,7 +11,7 @@ passport.use(
         },
         async (req, username, password, cbDone) => { // Add req parameter
             try {
-                const User = getUserModel(req.params.tenant); // Use req to get tenant
+                const User = await getUserModel(req.params.tenant); // Use req to get tenant
                 let user = await User.findOne({ email: username });
                 if (!user)
                     return cbDone(null, false, { message: "Incorrect username." });
@@ -19,6 +19,7 @@ passport.use(
                     return cbDone(null, false, { message: "Incorrect password." });
                 else return cbDone(null, user);
             } catch (err) {
+                console.log("Error in passport local strategy: ", err);
                 return cbDone(err);
             }
         }

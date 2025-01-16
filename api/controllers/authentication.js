@@ -68,6 +68,11 @@ const register = async (req, res) => {
     if (req.body.type === "admin" && req.body.adminKey !== process.env.ADMIN_KEY)
         return res.status(400).json({ message: "Invalid admin key." });
     const User = await getUserModel(req.tenant);
+    //check if user already exists
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+        return res.status(400).json({ message: "Email already registered." });
+    }
     const user = new User();
     user.name = req.body.name;
     user.email = req.body.email;

@@ -50,6 +50,7 @@ const getUserById = async (req, res) => {
     if (req.params.user_id.length !== 24)
         return res.status(400).json({ message: "Invalid User ID." });
     try {
+        const User = await getUserModel(req.params.tenant);
         const user = await User.findById(req.params.user_id);
         if (!user)
             return res.status(404).json({ message: "User not found." });
