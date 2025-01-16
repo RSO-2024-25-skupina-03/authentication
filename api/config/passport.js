@@ -9,9 +9,9 @@ passport.use(
             passwordField: "password",
             passReqToCallback: true, // Pass the request to the callback
         },
-        async (username, password, cbDone) => {
+        async (req, username, password, cbDone) => { // Add req parameter
             try {
-                const User = getUserModel(req.params.tenant)
+                const User = getUserModel(req.params.tenant); // Use req to get tenant
                 let user = await User.findOne({ email: username });
                 if (!user)
                     return cbDone(null, false, { message: "Incorrect username." });
