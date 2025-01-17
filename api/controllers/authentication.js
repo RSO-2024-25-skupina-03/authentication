@@ -38,6 +38,9 @@ import getUserModel from "../models/users.js";
  *                default: user
  *              adminKey:
  *                type: string
+ *              id:
+ *                type: string
+ *                description: Custom user ID (optional)
  *    responses:
  *      200:
  *        description: OK
@@ -77,11 +80,144 @@ const register = async (req, res) => {
     user.name = req.body.name;
     user.email = req.body.email;
     user.type = req.body.type;
+    if (req.body.id) {
+        user.id = req.body.id;
+    } else {
+        user.id = user._id;
+    }
 
     user.setPassword(req.body.password);
     try {
         await user.save();
         res.status(200).json({ token: user.generateJwt() });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+/**
+ * @openapi
+ * /{tenant}/generate-test-users:
+ *  get:
+ *    summary: Generate test users
+ *    description: Generate test users
+ *    tags: [Authentication, Users]
+ *    parameters:
+ *      - in: path
+ *        name: tenant
+ *        required: true
+ *        description: The tenant name
+ *        example: tenant1
+ *        schema:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: OK
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *      400:
+ *        description: Bad request
+ *        content:
+ *          application/json:
+ *            schema:
+ *             $ref: '#/components/schemas/ErrorMessage'
+ *      500:
+ *        description: Internal Server Error
+ *        content:
+ *          application/json:
+ *            schema:
+ *             $ref: '#/components/schemas/ErrorMessage'
+ */
+
+const generateTestUsers = async (req, res) => {
+    if (!req.params.tenant) {
+        return res.status(400).json({ message: "Tenant required" });
+    }
+    const User = await getUserModel(req.params.tenant);
+    // check first if users with id 1-9 already exist
+    const existingUsers = await User.find({ id: { $in: ["1", "2", "3", "4", "5", "6", "7", "8", "9"] } });
+    if (existingUsers.length > 0) {
+        return res.status(400).json({ message: "Test users already exist." });
+    }
+    const users = [
+        {
+            name: "Janez Novak",
+            email: "janez.novak@test.si",
+            password: "test",
+            type: "user",
+            id: "1"
+        },
+        {
+            name: "Admin",
+            email: "admin@test.si",
+            password: "test",
+            type: "admin",
+            id: "2"
+        },
+        {
+            name: "Maja Kranjc",
+            email: "maja.kranjc@test.si",
+            password: "test",
+            type: "user",
+            id: "3"
+        },
+        {
+            name: "Peter Horvat",
+            email: "peter.horvat@test.si",
+            password: "test",
+            type: "user",
+            id: "4"
+        },
+        {
+            name: "Ana Zupan",
+            email: "ana.zupan@test.si",
+            password: "test",
+            type: "user",
+            id: "5"
+        },
+        {
+            name: "Marko Kovač",
+            email: "marko.kovac@test.si",
+            password: "test",
+            type: "user",
+            id: "6"
+        },
+        {
+            name: "Eva Novak",
+            email: "eva.novak@test.si",
+            password: "test",
+            type: "user",
+            id: "7"
+        },
+        {
+            name: "Luka Vidmar",
+            email: "luka.vidmar@test.si",
+            password: "test",
+            type: "user",
+            id: "8"
+        },
+        {
+            name: "Nina Kralj",
+            email: "nina.kralj@test.si",
+            password: "test",
+            type: "user",
+            id: "9"
+        }
+    ];
+
+    try {
+        for (const userData of users) {
+            const user = new User(userData);
+            user.setPassword(userData.password);
+            await user.save();
+            console.log(`${user.id} User ${user.name} created.`);
+        }
+        res.status(200).json({ message: "Test users created successfully." });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -144,7 +280,7 @@ const register = async (req, res) => {
  */
 
 const login = (req, res) => {
-    if (!req.params.tenant){
+    if (!req.params.tenant) {
         return res.status(400).json({ message: "Tenant required" });
     }
     if (!req.body.email || !req.body.password)
@@ -218,12 +354,13 @@ const verifyToken = (req, res) => {
 
     jwt.verify(token, jwtKey, { algorithms: ["HS256"] }, (err, decoded) => {
         if (err) return res.status(401).json({ message: "Invalid token." });
-        res.status(200).json({ message: "Token is valid."});
+        res.status(200).json({ message: "Token is valid." });
     });
 };
 
 export default {
     register,
     login,
-    verifyToken
+    verifyToken,
+    generateTestUsers
 };

@@ -9,11 +9,17 @@ import getUserModel from "../models/users.js";
  *   tags: [Users]
  *   parameters:
  *     - in: path
+ *       name: tenant
+ *       schema:
+ *         type: string
+ *       required: true
+ *       description: Tenant name
+ *     - in: path
  *       name: user_id
  *       schema:
  *         type: string
  *       required: true
- *       description: User ID
+ *       description: User custom ID
  *   responses:
  *     200:
  *       description: OK
@@ -47,11 +53,14 @@ import getUserModel from "../models/users.js";
 const getUserById = async (req, res) => {
     if (!req.params.user_id)
         return res.status(400).json({ message: "User ID required." });
-    if (req.params.user_id.length !== 24)
-        return res.status(400).json({ message: "Invalid User ID." });
     try {
         const User = await getUserModel(req.params.tenant);
-        const user = await User.findById(req.params.user_id);
+        
+        // console log all the users' ids
+        const users = await User.find().select('id');
+        console.log(users.map((user) => user.id));
+
+        const user = await User.findOne({ id: req.params.user_id });
         if (!user)
             return res.status(404).json({ message: "User not found." });
         res.status(200).json({ name: user.name });

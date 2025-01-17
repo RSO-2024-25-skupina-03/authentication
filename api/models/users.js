@@ -13,7 +13,35 @@ dotenv.config();
  *   schemas:
  *     User:
  *       type: object
+ *       description: User object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Custom user ID
+ *           example: 1
+ *         type:
+ *           type: string
+ *           description: Type of user, can be user or admin
+ *           example: user
+ *         enum:
+ *           - user
+ *           - admin
+ *         email:
+ *           type: string
+ *           description: Email of the user
+ *           example: janez.novak@test.si
+ *         name:
+ *           type: string
+ *           description: Name of the user
+ *           example: Janez Novak
+ *         hash:
+ *           type: string
+ *           description: Hash of the password
+ *         salt:
+ *           type: string
+ *           description: Salt of the password
  *       required:
+ *         - id
  *         - type
  *         - email
  *         - name
@@ -22,6 +50,7 @@ dotenv.config();
  */
 
 const usersSchema = new mongoose.Schema({
+    id: { type: String, unique: true, required: [true, "ID is required!"] },
     type: { type: String, required: [true, "Type is required!"], enum: ["user", "admin"], default: "user" },
     email: { type: String, unique: true, required: [true, "Email is required!"] },
     name: { type: String, required: [true, "Name is required!"] },
@@ -64,6 +93,7 @@ usersSchema.methods.generateJwt = function () {
     return jwt.sign(
         {
             _id: this._id,
+            id: this.id,
             email: this.email,
             name: this.name,
             type: this.type,
@@ -76,7 +106,6 @@ usersSchema.methods.generateJwt = function () {
 const getUserModel = async (dbName) => {
     const connection = await connectToDatabase(dbName);
     console.log("Connected to database");
-    console.log(connection);
     return connection.model('User', usersSchema, 'Users');
 };
 

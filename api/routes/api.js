@@ -15,7 +15,8 @@ router.get("/:tenant/health", tenantHealthcheck);
 router.post("/:tenant/register", ctrlAuthentication.register);
 router.post("/:tenant/login", ctrlAuthentication.login);
 router.post("/jwt", ctrlAuthentication.verifyToken);
+router.get("/:tenant/generate-test-users", ctrlAuthentication.generateTestUsers);
 
-router.get("/:tenant/users", getUserById);
+router.get("/:tenant/username/:user_id", getUserById);
 
 export default router;
