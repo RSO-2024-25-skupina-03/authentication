@@ -5,8 +5,8 @@ on:
       - main
 
 jobs:
-  deploy:
-    name: build, test, and push to ACR 
+  test:
+    name: build, test
     runs-on: ubuntu-latest
 
     defaults:
@@ -48,7 +48,11 @@ jobs:
 
       - name: Stop Docker containers
         run: docker-compose down
-
+  deploy:
+    name: push to ACR
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
       - name: Azure Docker login
         uses: docker/login-action@v3
         with:
